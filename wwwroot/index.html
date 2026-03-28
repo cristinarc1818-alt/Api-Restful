@@ -1,0 +1,809 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Libros API - Gestión de Catálogo</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --primary-light: #3b82f6;
+            --secondary: #64748b;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --background: #f8fafc;
+            --surface: #ffffff;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        
+        header {
+            background: var(--surface);
+            padding: 20px 32px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-title h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title span {
+            font-size: 1.8rem;
+        }
+
+        .header-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+       
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+            .btn:hover {
+                background: var(--primary-dark);
+                transform: translateY(-1px);
+                box-shadow: var(--shadow);
+            }
+
+            .btn:active {
+                transform: translateY(0);
+            }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+            .btn-secondary:hover {
+                background: #475569;
+            }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+            .btn-danger:hover {
+                background: #dc2626;
+            }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 6px;
+        }
+
+        
+        .alert {
+            padding: 14px 20px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: none;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+        }
+
+        
+        .table-container {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f1f5f9;
+            border-bottom: 2px solid var(--border);
+        }
+
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .book-title {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .book-year {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .book-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            max-width: 300px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+            .modal.active {
+                display: flex;
+            }
+
+        .modal-content {
+            background: var(--surface);
+            padding: 28px;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 520px;
+            box-shadow: var(--shadow-lg);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+            .modal-header h2 {
+                font-size: 1.3rem;
+                font-weight: 600;
+                color: var(--text);
+            }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+            .modal-close:hover {
+                background: #f1f5f9;
+                color: var(--text);
+            }
+
+      
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                color: var(--text);
+                font-size: 0.9rem;
+            }
+
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
+                padding: 12px 14px;
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                font-size: 1rem;
+                transition: border-color 0.2s, box-shadow 0.2s;
+                background: var(--surface);
+            }
+
+                .form-group input:focus,
+                .form-group textarea:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+                }
+
+            .form-group textarea {
+                resize: vertical;
+                min-height: 80px;
+            }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+            display: none;
+        }
+
+            .loading.active {
+                display: block;
+            }
+
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+       
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            header {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 0.9rem;
+            }
+
+            th, td {
+                padding: 12px 14px;
+            }
+
+            .book-description {
+                max-width: 150px;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e0e7ff;
+            color: var(--primary-dark);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <
+        <header>
+            <div class="header-title">
+                <h1><span>📚</span> Libros API</h1>
+                <div class="header-subtitle">Gestión de catálogo de libros</div>
+            </div>
+            <div class="header-actions">
+                <button class="btn" onclick="openModal()">
+                    <span>➕</span> Nuevo Libro
+                </button>
+                <button class="btn btn-secondary" onclick="cargarLibros()">
+                    <span>🔄</span> Actualizar
+                </button>
+            </div>
+        </header>
+
+       
+        <div id="alert" class="alert"></div>
+
+        <div id="loading" class="loading">
+            <div class="loading-spinner"></div>
+            <div>Cargando datos...</div>
+        </div>
+
+        
+        <div class="table-container">
+            <table id="tablaLibros">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Autor</th>
+                        <th>Año</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyLibros">
+                   
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Nuevo Libro</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="libroForm">
+                <input type="hidden" id="libroId">
+
+                <div class="form-group">
+                    <label for="titulo">Título *</label>
+                    <input type="text" id="titulo" required minlength="3" maxlength="200" placeholder="Ej: Cien años de soledad">
+                </div>
+
+                <div class="form-group">
+                    <label for="autor">Autor *</label>
+                    <input type="text" id="autor" required maxlength="100" placeholder="Ej: Gabriel García Márquez">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="año">Año de Publicación</label>
+                        <input type="number" id="año" min="1800" max="2100" placeholder="Ej: 1967">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="descripcion">Descripción</label>
+                    <textarea id="descripcion" maxlength="500" placeholder="Breve descripción del libro..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+
+        
+        const API_BASE = '/api/libros';
+
+     
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarLibros();
+            setupForm();
+            setupModal();
+        });
+
+        function setupForm() {
+            const form = document.getElementById('libroForm');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await guardarLibro();
+            });
+        }
+
+        function setupModal() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeModal();
+            });
+
+            document.getElementById('modal').addEventListener('click', (e) => {
+                if (e.target.id === 'modal') closeModal();
+            });
+        }
+
+        async function cargarLibros() {
+            mostrarLoading(true);
+            ocultarAlerta();
+
+            try {
+                const response = await fetch(API_BASE, {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `Error ${response.status}: ${response.statusText}`);
+                }
+
+                const libros = await response.json();
+                renderizarTabla(libros);
+
+                if (libros.length === 0) {
+                    mostrarTablaVacia();
+                }
+
+            } catch (error) {
+                console.error('Error al cargar libros:', error);
+                mostrarAlerta(`❌ ${error.message}`, 'error');
+                renderizarTabla([]);
+                mostrarTablaVacia();
+            } finally {
+                mostrarLoading(false);
+            }
+        }
+
+        async function guardarLibro() {
+            const id = document.getElementById('libroId').value;
+            const libro = {
+                titulo: document.getElementById('titulo').value.trim(),
+                autor: document.getElementById('autor').value.trim(),
+                añoPublicacion: document.getElementById('año').value ? parseInt(document.getElementById('año').value) : null,
+                descripcion: document.getElementById('descripcion').value.trim() || null
+            };
+
+           
+            if (!libro.titulo || !libro.autor) {
+                mostrarAlerta('⚠️ Título y Autor son obligatorios', 'warning');
+                return;
+            }
+
+            try {
+                const url = id ? `${API_BASE}/${id}` : API_BASE;
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(libro)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `Error ${response.status}`);
+                }
+
+                closeModal();
+                mostrarAlerta(id ? '✅ Libro actualizado correctamente' : '✅ Libro creado correctamente', 'success');
+                await cargarLibros();
+
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                mostrarAlerta(`❌ ${error.message}`, 'error');
+            }
+        }
+
+        
+        async function editarLibro(id) {
+            try {
+                const response = await fetch(`${API_BASE}/${id}`, {
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `Error ${response.status}: Libro no encontrado`);
+                }
+
+                const libro = await response.json();
+
+                document.getElementById('libroId').value = libro.id;
+                document.getElementById('titulo').value = libro.titulo || '';
+                document.getElementById('autor').value = libro.autor || '';
+                document.getElementById('año').value = libro.añoPublicacion || '';
+                document.getElementById('descripcion').value = libro.descripcion || '';
+
+                document.getElementById('modalTitle').textContent = 'Editar Libro';
+                document.getElementById('modal').classList.add('active');
+
+            } catch (error) {
+                console.error('Error al cargar libro:', error);
+                mostrarAlerta(`❌ ${error.message}`, 'error');
+            }
+        }
+
+      
+        async function eliminarLibro(id, titulo) {
+            if (!confirm(`¿Está seguro de eliminar "${titulo}"? Esta acción no se puede deshacer.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({}));
+                    throw new Error(error.message || `Error ${response.status}`);
+                }
+
+                mostrarAlerta('🗑️ Libro eliminado correctamente', 'success');
+                await cargarLibros();
+
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+                mostrarAlerta(`❌ ${error.message}`, 'error');
+            }
+        }
+
+    
+        function renderizarTabla(libros) {
+            const tbody = document.getElementById('tbodyLibros');
+
+            if (!libros || libros.length === 0) {
+                mostrarTablaVacia();
+                return;
+            }
+
+            tbody.innerHTML = libros.map(libro => `
+                    <tr>
+                        <td><span class="badge">#${libro.id}</span></td>
+                        <td><strong class="book-title">${escapeHtml(libro.titulo)}</strong></td>
+                        <td>${escapeHtml(libro.autor)}</td>
+                        <td><span class="book-year">${libro.añoPublicacion || '-'}</span></td>
+                        <td><span class="book-description" title="${escapeHtml(libro.descripcion || '')}">${escapeHtml(libro.descripcion) || '-'}</span></td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn btn-sm" onclick="editarLibro(${libro.id})" title="Editar">✏️ Editar</button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarLibro(${libro.id}, '${escapeHtml(libro.titulo)}')" title="Eliminar">🗑️ Eliminar</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+       
+        function mostrarTablaVacia() {
+            const tbody = document.getElementById('tbodyLibros');
+            tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📚</div>
+                                <p>No hay libros registrados</p>
+                                <button class="btn" onclick="openModal()">➕ Agregar primer libro</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+        }
+
+       
+        function openModal() {
+            document.getElementById('libroForm').reset();
+            document.getElementById('libroId').value = '';
+            document.getElementById('modalTitle').textContent = 'Nuevo Libro';
+            document.getElementById('modal').classList.add('active');
+            document.getElementById('titulo').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function mostrarAlerta(mensaje, tipo) {
+            const alert = document.getElementById('alert');
+            alert.textContent = mensaje;
+            alert.className = `alert alert-${tipo}`;
+            alert.style.display = 'block';
+
+            setTimeout(() => {
+                alert.style.display = 'none';
+            }, 5000);
+        }
+
+        function ocultarAlerta() {
+            document.getElementById('alert').style.display = 'none';
+        }
+
+        function mostrarLoading(mostrar) {
+            const loading = document.getElementById('loading');
+            const table = document.querySelector('.table-container');
+
+            if (mostrar) {
+                loading.classList.add('active');
+                table.style.opacity = '0.5';
+                table.style.pointerEvents = 'none';
+            } else {
+                loading.classList.remove('active');
+                table.style.opacity = '1';
+                table.style.pointerEvents = 'auto';
+            }
+        }
+
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
