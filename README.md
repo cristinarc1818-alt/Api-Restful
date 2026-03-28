@@ -14,3 +14,10 @@ URLs de Acceso
 Swagger: https://localhost:7068/
 API: https://localhost:7068/api/libros
 Frontend: https://localhost:7068/index.html
+
+Configuraciones
+JSON camelCase configurado
+Referencias circulares ignoradas
+CORS habilitado para desarrollo
+Errores retornan JSON consistente
+Swagger en raíz con RoutePrefix vacío
